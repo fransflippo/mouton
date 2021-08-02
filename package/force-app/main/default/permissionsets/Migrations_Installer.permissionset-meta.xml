@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Allow access to run migrations.</description>
+    <hasActivationRequired>false</hasActivationRequired>
+    <label>Migrations Installer</label>
+</PermissionSet>
