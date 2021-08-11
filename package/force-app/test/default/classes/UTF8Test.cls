@@ -60,4 +60,16 @@ private class UTF8Test {
         // Then
         System.assertEquals(new List<Integer> { 229, 189, 188, 227, 129, 175, 233, 163, 159, 227, 129, 185, 233, 129, 142, 227, 129, 142, 227, 129, 170, 227, 129, 132, 227, 130, 136, 227, 129, 134, 227, 129, 171, 227, 129, 151, 227, 129, 166, 227, 129, 132, 227, 130, 139, 227, 128, 130 }, bytes);
     }
+
+    @IsTest
+    static void testEncode_Emoji() {
+        // Given
+	    String s = 'LOL 😂🤣😂';
+
+        // When
+        List<Integer> bytes = UTF8.encode(s);
+
+        // Then
+        System.assertEquals(new List<Integer> { 76, 79, 76, 32, 240, 159, 152, 130, 240, 159, 164, 163, 240, 159, 152, 130 }, bytes);
+    }
 }

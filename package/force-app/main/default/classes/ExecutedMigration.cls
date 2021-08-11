@@ -10,8 +10,6 @@ global class ExecutedMigration {
 
     public Integer version;
 
-    public String data;
-
     public Integer checksum;
 
 }

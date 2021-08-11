@@ -10,10 +10,7 @@ global class Migration {
 
 	public final Integer version {
 		get {
-			String[] parts = script.split('__', 2);
-			if (parts.size() == 1) {
-				throw new IllegalArgumentException('Invalid script name: ' + script);
-			}
+			String[] parts = splitScriptName(script);
 			String versionString = parts[0];
 			String migrationType = versionString.substring(0, 1);
 			if (migrationType != 'V') {
@@ -28,33 +25,17 @@ global class Migration {
 
 	public final String description {
 		get {
-			String[] parts = script.split('__', 2);
-			if (parts.size() == 1) {
-				throw new IllegalArgumentException('Invalid script name: ' + script);
-			}
-			Integer p = parts[1].lastIndexOf('.');
-			String description;
-			if (p == -1) {
-				description = parts[1];
-			} else {
-				description = parts[1].substring(0, p);
-			}
+			String[] parts = splitScriptName(script);
+			String description = parts[1];
 			return description.replace('_', ' ');
 		}
 	}
 
 	public final Migration.Type type {
 		get {
-			String[] parts = script.split('__', 2);
-			if (parts.size() == 1) {
-				throw new IllegalArgumentException('Invalid script name: ' + script);
-			}
-			Integer p = parts[1].lastIndexOf('.');
-			if (p == -1 || p == parts[1].length() - 1) {
-				throw new IllegalArgumentException('Cannot determine type of migration with script name: ' + script);
-			}
-			String extension = parts[1].substring(p + 1);
-			if (extension.equalsIgnoreCase('apex')) {
+			String[] parts = splitScriptName(script);
+			String extension = parts[2];
+			if ('apex'.equalsIgnoreCase(extension)) {
 				return Migration.Type.APEX;
 			}
 			throw new IllegalArgumentException('Unknown or unsupported script name extension ".' + extension + '": ' + script);
@@ -65,5 +46,25 @@ global class Migration {
 		get {
 			return CRC32.calculate(data);
 		}
+	}
+
+	/**
+	 * Splits a script name into its three parts: version, description, and extension.
+	 * If the script name is invalid for some reason, throws an IllegalArgumentException.
+	**/
+	private static String[] splitScriptName(String scriptName) {
+		String[] parts = scriptName.split('__', 2);
+		if (parts.size() == 1) {
+			throw new IllegalArgumentException('Invalid script name: ' + scriptName);
+		}
+		Integer p = parts[1].lastIndexOf('.');
+		if (p == -1 || p == parts[1].length() - 1) {
+			throw new IllegalArgumentException('Cannot determine type of migration with script name: ' + scriptName);
+		}
+		return new String[] {
+				parts[0],
+				parts[1].substring(0, p),
+				parts[1].substring(p + 1)
+		};
 	}
 }

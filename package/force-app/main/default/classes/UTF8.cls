@@ -18,6 +18,9 @@ public class UTF8 {
 				bytes.add(c >> 12 & 63 | 128);
 				bytes.add(c >> 6  & 63 | 128);
 				bytes.add(c & 63 | 128);
+				// Skip the next code point, as codePointAt would have already returned the high-surrogate and
+				// low-surrogate code points in one "supplementary code point"
+				p++;
 			}
 		}
 		return bytes;

@@ -1,8 +1,15 @@
 public with sharing class MigrationService {
 
 	@TestVisible
-	private static ApexRunner apexRunner = new ApexRunner();
+	private ApexRunner apexRunner = new ApexRunner();
 
+	@TestVisible
+	private Clock theClock = Clock.system();
+
+	/**
+	 * @description
+	 * Returns a list of all packages that have saved migrations.
+	**/
 	public List<String> getPackages() {
 		List<AggregateResult> migrations = [ SELECT Package__c FROM Migration__c GROUP BY Package__c ];
 		List<String> packages = new List<String>();
@@ -12,6 +19,10 @@ public with sharing class MigrationService {
 		return packages;
 	}
 
+	/**
+	 * @description
+	 * Returns summaries of all saved migrations in the package specified.
+	**/
 	public List<MigrationSummary> findByPackageName(String packageName, String baseUri) {
 		List<Migration__c> migrationEntities = [ SELECT Checksum__c, Description__c, Installed_On__c, Package__c, Script__c, Type__c, Version__c FROM Migration__c WHERE Package__c = :packageName ];
 		List<MigrationSummary> migrations = new List<MigrationSummary>();
@@ -23,6 +34,14 @@ public with sharing class MigrationService {
 		return migrations;
 	}
 
+	/**
+	 * @description
+	 * Runs the given migration against the package specified.
+	 * If the migration already exists and the description and checksum of the saved migration match the migration being
+	 * submitted, this method returns without doing anything.
+	 * If the migration already exists and the description and/or checksum of the saved migration do not match the
+	 * migration being submitted, a MigrationException is thrown and the migration is not run nor saved to the database.
+	**/
 	public void run(String packageName, Migration migration) {
 		String data = migration.data;
 		Migration__c migrationEntity = new Migration__c(
@@ -30,7 +49,7 @@ public with sharing class MigrationService {
 				Version__c = migration.version,
 				Checksum__c = migration.checksum,
 				Description__c = migration.description,
-				Installed_On__c = Datetime.now(),
+				Installed_On__c = theClock.now(),
 				Script__c = migration.script,
 				Type__c = migration.type.name()
 		);
@@ -71,18 +90,10 @@ public with sharing class MigrationService {
 		apexRunner.executeAnonymous(data);
 	}
 
-	private ExecutedMigration getMigrationByPackageAndId(String packageName, Id id) {
-		Migration__c migrationEntity = [ SELECT Checksum__c, Description__c, Installed_On__c, Package__c, Script__c, Type__c, Version__c FROM Migration__c WHERE Package__c = :packageName AND Id = :id ];
-		ExecutedMigration migration = new ExecutedMigration();
-		migration.description = migrationEntity.Description__c;
-		migration.installedOn = migrationEntity.Installed_On__c;
-		migration.script = migrationEntity.Script__c;
-		migration.type = toType(migrationEntity.Type__c);
-		migration.version = migrationEntity.Version__c.intValue();
-		migration.checksum = migrationEntity.Checksum__c.intValue();
-		return migration;
-	}
-
+	/**
+	 * @description
+	 * Returns the details of a saved migration.
+	**/
 	public ExecutedMigration getMigration(String packageName, Integer version) {
 		Migration__c migrationEntity = [ SELECT Checksum__c, Description__c, Installed_On__c, Package__c, Script__c, Type__c, Version__c FROM Migration__c WHERE Package__c = :packageName AND Version__c = :version ];
 		ExecutedMigration migration = new ExecutedMigration();
@@ -95,9 +106,16 @@ public with sharing class MigrationService {
 		return migration;
 	}
 
-	public void deleteMigration(String packageName, Integer version) {
-		Migration__c migrationEntity = [ SELECT Id FROM Migration__c WHERE Package__c = :packageName AND Version__c = :version ];
-		delete migrationEntity;
+	private ExecutedMigration getMigrationByPackageAndId(String packageName, Id id) {
+		Migration__c migrationEntity = [ SELECT Checksum__c, Description__c, Installed_On__c, Package__c, Script__c, Type__c, Version__c FROM Migration__c WHERE Package__c = :packageName AND Id = :id ];
+		ExecutedMigration migration = new ExecutedMigration();
+		migration.description = migrationEntity.Description__c;
+		migration.installedOn = migrationEntity.Installed_On__c;
+		migration.script = migrationEntity.Script__c;
+		migration.type = toType(migrationEntity.Type__c);
+		migration.version = migrationEntity.Version__c.intValue();
+		migration.checksum = migrationEntity.Checksum__c.intValue();
+		return migration;
 	}
 
 	private Migration.Type toType(String s) {
