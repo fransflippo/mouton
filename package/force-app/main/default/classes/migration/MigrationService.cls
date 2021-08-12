@@ -1,7 +1,7 @@
 public with sharing class MigrationService {
 
 	@TestVisible
-	private ApexRunner apexRunner = new ApexRunner();
+	private ApexRunner apexRunner = new SoapApiApexRunner();
 
 	@TestVisible
 	private Clock theClock = Clock.system();
