@@ -1,3 +1,3 @@
-public class MigrationException extends Exception {
+public virtual class MigrationException extends Exception {
 
 }

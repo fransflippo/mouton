@@ -5,8 +5,8 @@
       "default": true
     }
   ],
-  "name": "migrations",
-  "namespace": "migrations",
+  "name": "Mouton",
+  "namespace": "m7n",
   "sfdcLoginUrl": "https://login.salesforce.com",
   "sourceApiVersion": "52.0"
 }

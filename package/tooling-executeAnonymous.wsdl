@@ -1,0 +1,238 @@
+<definitions targetNamespace="urn:tooling.soap.sforce.com" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:tns="urn:tooling.soap.sforce.com" xmlns:mns="urn:metadata.tooling.soap.sforce.com"
+             xmlns:ens="urn:sobject.tooling.soap.sforce.com" xmlns:fns="urn:fault.tooling.soap.sforce.com">
+    <types>
+        <xsd:schema elementFormDefault="qualified" targetNamespace="urn:metadata.tooling.soap.sforce.com">
+            <xsd:import namespace="urn:sobject.tooling.soap.sforce.com"/>
+            <xsd:import namespace="urn:tooling.soap.sforce.com"/>
+        </xsd:schema>
+        <xsd:schema elementFormDefault="qualified" targetNamespace="urn:sobject.tooling.soap.sforce.com">
+            <xsd:import namespace="urn:metadata.tooling.soap.sforce.com"/>
+            <xsd:import namespace="urn:tooling.soap.sforce.com"/>
+        </xsd:schema>
+        <xsd:schema elementFormDefault="qualified" targetNamespace="urn:tooling.soap.sforce.com">
+            <xsd:import namespace="urn:metadata.tooling.soap.sforce.com"/>
+            <xsd:import namespace="urn:sobject.tooling.soap.sforce.com"/>
+            <xsd:element name="AllOrNoneHeader">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="allOrNone" type="xsd:boolean"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="AllowFieldTruncationHeader">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="allowFieldTruncation" type="xsd:boolean"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="CallOptions">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="client" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="DebuggingHeader">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="categories" minOccurs="0" maxOccurs="unbounded" type="tns:LogInfo"/>
+                        <xsd:element name="debugLevel" type="tns:LogType"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:complexType name="LogInfo">
+                <xsd:sequence>
+                    <xsd:element name="category" type="tns:LogCategory"/>
+                    <xsd:element name="level" type="tns:LogCategoryLevel"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:simpleType name="LogCategory">
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="Db"/>
+                    <xsd:enumeration value="Workflow"/>
+                    <xsd:enumeration value="Validation"/>
+                    <xsd:enumeration value="Callout"/>
+                    <xsd:enumeration value="Apex_code"/>
+                    <xsd:enumeration value="Apex_profiling"/>
+                    <xsd:enumeration value="Visualforce"/>
+                    <xsd:enumeration value="System"/>
+                    <xsd:enumeration value="Wave"/>
+                    <xsd:enumeration value="Nba"/>
+                    <xsd:enumeration value="All"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:simpleType name="LogCategoryLevel">
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="None"/>
+                    <xsd:enumeration value="Finest"/>
+                    <xsd:enumeration value="Finer"/>
+                    <xsd:enumeration value="Fine"/>
+                    <xsd:enumeration value="Debug"/>
+                    <xsd:enumeration value="Info"/>
+                    <xsd:enumeration value="Warn"/>
+                    <xsd:enumeration value="Error"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:simpleType name="LogType">
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="None"/>
+                    <xsd:enumeration value="Debugonly"/>
+                    <xsd:enumeration value="Db"/>
+                    <xsd:enumeration value="Profiling"/>
+                    <xsd:enumeration value="Callout"/>
+                    <xsd:enumeration value="Detail"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:element name="DebuggingInfo">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="debugLog" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="DisableFeedTrackingHeader">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="disableFeedTracking" type="xsd:boolean"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="MetadataVersionCheck">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="facts" minOccurs="0" maxOccurs="unbounded" type="tns:Fact"/>
+                        <xsd:element name="operation" type="tns:Operation"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:complexType name="Fact">
+                <xsd:sequence>
+                    <xsd:element name="fact" type="tns:MetadataVersionCheckFact"/>
+                    <xsd:element name="subject" type="xsd:string"/>
+                    <xsd:element name="token" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:simpleType name="MetadataVersionCheckFact">
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="DescribeLayoutVersion"/>
+                    <xsd:enumeration value="DescribeSObjectVersion"/>
+                    <xsd:enumeration value="SystemConfigurationVersion"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:simpleType name="Operation">
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="RetrieveTokens"/>
+                    <xsd:enumeration value="ErrorOnNewerVersion"/>
+                    <xsd:enumeration value="SkipOnSameVersion"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:element name="MetadataWarningsHeader">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="ignoreSaveWarnings" type="xsd:boolean"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="PackageVersionHeader">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="packageVersions" minOccurs="0" maxOccurs="unbounded" type="tns:PackageVersion"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:complexType name="PackageVersion">
+                <xsd:sequence>
+                    <xsd:element name="majorNumber" type="xsd:int"/>
+                    <xsd:element name="minorNumber" type="xsd:int"/>
+                    <xsd:element name="namespace" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:element name="SessionHeader">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="sessionId" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="executeAnonymous">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="String" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="executeAnonymousResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="result" type="tns:ExecuteAnonymousResult"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:complexType name="ExecuteAnonymousResult">
+                <xsd:sequence>
+                    <xsd:element name="column" type="xsd:int"/>
+                    <xsd:element name="compileProblem" type="xsd:string" nillable="true"/>
+                    <xsd:element name="compiled" type="xsd:boolean"/>
+                    <xsd:element name="exceptionMessage" type="xsd:string" nillable="true"/>
+                    <xsd:element name="exceptionStackTrace" type="xsd:string" nillable="true"/>
+                    <xsd:element name="line" type="xsd:int"/>
+                    <xsd:element name="success" type="xsd:boolean"/>
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:schema>
+    </types>
+    <message name="Header">
+        <part name="APIPerformanceInfo" element="tns:APIPerformanceInfo"/>
+        <part name="AllOrNoneHeader" element="tns:AllOrNoneHeader"/>
+        <part name="AllowFieldTruncationHeader" element="tns:AllowFieldTruncationHeader"/>
+        <part name="CallOptions" element="tns:CallOptions"/>
+        <part name="DebuggingHeader" element="tns:DebuggingHeader"/>
+        <part name="DebuggingInfo" element="tns:DebuggingInfo"/>
+        <part name="DisableFeedTrackingHeader" element="tns:DisableFeedTrackingHeader"/>
+        <part name="MetadataVersionCheck" element="tns:MetadataVersionCheck"/>
+        <part name="MetadataWarningsHeader" element="tns:MetadataWarningsHeader"/>
+        <part name="PackageVersionHeader" element="tns:PackageVersionHeader"/>
+        <part name="SessionHeader" element="tns:SessionHeader"/>
+    </message>
+    <message name="executeAnonymousRequest">
+        <part element="tns:executeAnonymous" name="parameters"/>
+    </message>
+    <message name="executeAnonymousResponse">
+        <part element="tns:executeAnonymousResponse" name="parameters"/>
+    </message>
+    <portType name="SforceServicePortType">
+        <operation name="executeAnonymous">
+            <documentation>Execute an anonymous Apex code block</documentation>
+            <input message="tns:executeAnonymousRequest"/>
+            <output message="tns:executeAnonymousResponse"/>
+        </operation>
+    </portType>
+    <binding name="SforceServiceBinding" type="tns:SforceServicePortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="executeAnonymous">
+            <soap:operation soapAction=""/>
+            <input>
+                <soap:header use="literal" part="SessionHeader" message="tns:Header"/>
+                <soap:header use="literal" part="DebuggingHeader" message="tns:Header"/>
+                <soap:header use="literal" part="PackageVersionHeader" message="tns:Header"/>
+                <soap:header use="literal" part="CallOptions" message="tns:Header"/>
+                <soap:header use="literal" part="AllowFieldTruncationHeader" message="tns:Header"/>
+                <soap:header use="literal" part="DisableFeedTrackingHeader" message="tns:Header"/>
+                <soap:body use="literal" parts="parameters"/>
+            </input>
+            <output>
+                <soap:header use="literal" part="DebuggingInfo" message="tns:Header"/>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+    </binding>
+    <service name="SforceServiceService">
+        <documentation></documentation>
+        <port binding="tns:SforceServiceBinding" name="SforceService">
+            <soap:address location="https://test.salesforce.com/services/Soap/T/53.0"/>
+        </port>
+    </service>
+</definitions>

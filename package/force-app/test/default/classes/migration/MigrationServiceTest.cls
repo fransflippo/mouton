@@ -103,7 +103,7 @@ private class MigrationServiceTest {
 		insertMigrations();
 
 		// When
-		List<MigrationSummary> migrations = migrationService.findByPackageName('myPackage2', 'http://localhost/migrations/myPackage2');
+		List<MigrationSummary> migrations = migrationService.findSummariesByPackageName('myPackage2', 'http://localhost/migrations/myPackage2');
 
 		// Then
 		System.assertEquals(2, migrations.size());
@@ -118,14 +118,14 @@ private class MigrationServiceTest {
 	}
 
     @IsTest
-	public static void testRun_newMigration() {
+	public static void testSaveMigration_newMigration() {
 		// Given
-		Migration migration = new Migration();
-		migration.script = 'V002__Test_migration.apex';
+		MigrationDefinition migration = new MigrationDefinition();
+		migration.scriptName = 'V002__Test_migration.apex';
 		migration.data = TEST_MIGRATION_SCRIPT;
 
 		// When
-		migrationService.run('myPackage', migration);
+		migrationService.runMigration('myPackage', migration);
 
 		// Then
 		List<Migration__c> savedMigrations = [ SELECT Checksum__c, Description__c, Installed_On__c, Package__c, Script__c, Type__c, Version__c FROM Migration__c ];
@@ -138,27 +138,18 @@ private class MigrationServiceTest {
 		System.assertEquals('V002__Test_migration.apex', savedMigration.Script__c);
 		System.assertEquals('APEX', savedMigration.Type__c);
 		System.assertEquals(2, savedMigration.Version__c);
-
-		// Assert that the migration was run
-		System.assertEquals(1, methodInvocations.size());
-		MethodInvocation invocation = methodInvocations[0];
-		System.assertEquals(apexRunner, invocation.stubbedObject);
-		System.assertEquals('executeAnonymous', invocation.stubbedMethodName);
-		System.assertEquals(1, invocation.listOfArgs.size());
-		System.assertEquals(TEST_MIGRATION_SCRIPT, invocation.listOfArgs[0]);
-
 	}
 
     @IsTest
-	public static void testRun_error() {
+	public static void testSaveMigration_error() {
 		// Given
-		Migration migration = new Migration();
-		migration.script = 'V002__Test_migration.apex';
+		MigrationDefinition migration = new MigrationDefinition();
+		migration.scriptName = 'V002__Test_migration.apex';
 		migration.data = TEST_MIGRATION_SCRIPT;
 
 		// When
 		try {
-			migrationService.run('', migration);
+			migrationService.runMigration('', migration);
 			System.assert(false, 'Expected MigrationException');
 		} catch (MigrationException e) {
 			System.assertEquals('Saving migration V002__Test_migration.apex failed: Required fields are missing: [m7n__Package__c]', e.getMessage());
@@ -173,7 +164,7 @@ private class MigrationServiceTest {
 	}
 
     @IsTest
-	public static void testRun_existingMigration_checksumAndDescriptionMatch() {
+	public static void testSaveMigration_existingMigration_checksumAndDescriptionMatch() {
 		// Given
 		Migration__c existingMigration = new Migration__c(
 				Checksum__c = -1976816763,
@@ -186,12 +177,12 @@ private class MigrationServiceTest {
 		);
 		insert existingMigration;
 
-		Migration migration = new Migration();
-		migration.script = 'V002__Test_migration.apex';
+		MigrationDefinition migration = new MigrationDefinition();
+		migration.scriptName = 'V002__Test_migration.apex';
 		migration.data = TEST_MIGRATION_SCRIPT;
 
 		// When
-		migrationService.run('myPackage', migration);
+		migrationService.runMigration('myPackage', migration);
 
 		// Then
 		List<Migration__c> savedMigrations = [ SELECT Checksum__c, Description__c, Installed_On__c, Package__c, Script__c, Type__c, Version__c FROM Migration__c ];
@@ -205,13 +196,10 @@ private class MigrationServiceTest {
 		System.assertEquals('V002__Test_migration.apex', savedMigration.Script__c);
 		System.assertEquals('APEX', savedMigration.Type__c);
 		System.assertEquals(2, savedMigration.Version__c);
-
-		// Assert that the migration did not run
-		System.assertEquals(0, methodInvocations.size());
 	}
 
     @IsTest
-	public static void testRun_existingMigration_checksumDoesNotMatch() {
+	public static void testSaveMigration_existingMigration_checksumDoesNotMatch() {
 		// Given
 		Migration__c existingMigration = new Migration__c(
 				Checksum__c = -1976816762,
@@ -224,13 +212,13 @@ private class MigrationServiceTest {
 		);
 		insert existingMigration;
 
-		Migration migration = new Migration();
-		migration.script = 'V002__Test_migration.apex';
+		MigrationDefinition migration = new MigrationDefinition();
+		migration.scriptName = 'V002__Test_migration.apex';
 		migration.data = TEST_MIGRATION_SCRIPT;
 
 		// When
 		try {
-			migrationService.run('myPackage', migration);
+			migrationService.runMigration('myPackage', migration);
 			System.assert(false, 'Expected MigrationException');
 		} catch (MigrationException e) {
 			// Then
@@ -247,13 +235,10 @@ private class MigrationServiceTest {
 		System.assertEquals('V002__Test_migration.apex', savedMigration.Script__c);
 		System.assertEquals('APEX', savedMigration.Type__c);
 		System.assertEquals(2, savedMigration.Version__c);
-
-		// Assert that the migration did not run
-		System.assertEquals(0, methodInvocations.size());
 	}
 
     @IsTest
-	public static void testRun_existingMigration_descriptionDoesNotMatch() {
+	public static void testSaveMigration_existingMigration_descriptionDoesNotMatch() {
 		// Given
 		Migration__c existingMigration = new Migration__c(
 				Checksum__c = -1976816763,
@@ -266,13 +251,13 @@ private class MigrationServiceTest {
 		);
 		insert existingMigration;
 
-		Migration migration = new Migration();
-		migration.script = 'V002__Test_migration.apex';
+		MigrationDefinition migration = new MigrationDefinition();
+		migration.scriptName = 'V002__Test_migration.apex';
 		migration.data = TEST_MIGRATION_SCRIPT;
 
 		// When
 		try {
-			migrationService.run('myPackage', migration);
+			migrationService.runMigration('myPackage', migration);
 			System.assert(false, 'Expected MigrationException');
 		} catch (MigrationException e) {
 			// Then
@@ -289,22 +274,18 @@ private class MigrationServiceTest {
 		System.assertEquals('V002__Test_migration.apex', savedMigration.Script__c);
 		System.assertEquals('APEX', savedMigration.Type__c);
 		System.assertEquals(2, savedMigration.Version__c);
-
-		// Assert that the migration did not run
-		System.assertEquals(0, methodInvocations.size());
-
 	}
 
     @IsTest
-	public static void testRun_unsupportedMigrationType() {
+	public static void testSaveMigration_unsupportedMigrationType() {
 		// Given
-		Migration migration = new Migration();
-		migration.script = 'V002__Test_migration.sql';
+		MigrationDefinition migration = new MigrationDefinition();
+		migration.scriptName = 'V002__Test_migration.sql';
 		migration.data = TEST_MIGRATION_SCRIPT;
 
 		// When
 		try {
-			migrationService.run('myPackage', migration);
+			migrationService.runMigration('myPackage', migration);
 			System.assert(false, 'Expected MigrationException');
 		} catch (IllegalArgumentException e) {
 			// Then
@@ -312,20 +293,18 @@ private class MigrationServiceTest {
 		}
 		List<Migration__c> savedMigrations = [ SELECT Checksum__c, Description__c, Installed_On__c, Package__c, Script__c, Type__c, Version__c FROM Migration__c ];
 		System.assertEquals(0, savedMigrations.size());
-		// Assert that the migration did not run
-		System.assertEquals(0, methodInvocations.size());
 	}
 
     @IsTest
-	public static void testRun_newMigration_invalidScriptName_missingVersion() {
+	public static void testSaveMigration_newMigration_invalidScriptName_missingVersion() {
 		// Given
-		Migration migration = new Migration();
-		migration.script = 'Test_migration.apex';
+		MigrationDefinition migration = new MigrationDefinition();
+		migration.scriptName = 'Test_migration.apex';
 		migration.data = TEST_MIGRATION_SCRIPT;
 
 		// When
 		try {
-			migrationService.run('myPackage', migration);
+			migrationService.runMigration('myPackage', migration);
 			System.assert(false, 'Expected IllegalArgumentException');
 		} catch (IllegalArgumentException e) {
 		}
@@ -336,15 +315,15 @@ private class MigrationServiceTest {
 	}
 
     @IsTest
-	public static void testRun_newMigration_invalidScriptName_invalidMigrationType() {
+	public static void testSaveMigration_newMigration_invalidScriptName_invalidMigrationType() {
 		// Given
-		Migration migration = new Migration();
-		migration.script = 'W001__Test_migration.apex';
+		MigrationDefinition migration = new MigrationDefinition();
+		migration.scriptName = 'W001__Test_migration.apex';
 		migration.data = TEST_MIGRATION_SCRIPT;
 
 		// When
 		try {
-			migrationService.run('myPackage', migration);
+			migrationService.runMigration('myPackage', migration);
 			System.assert(false, 'Expected IllegalArgumentException');
 		} catch (IllegalArgumentException e) {
 		}
@@ -355,15 +334,15 @@ private class MigrationServiceTest {
 	}
 
     @IsTest
-	public static void testRun_newMigration_invalidScriptName_noFileExtension() {
+	public static void testSaveMigration_newMigration_invalidScriptName_noFileExtension() {
 		// Given
-		Migration migration = new Migration();
-		migration.script = 'V001__Test_migration';
+		MigrationDefinition migration = new MigrationDefinition();
+		migration.scriptName = 'V001__Test_migration';
 		migration.data = TEST_MIGRATION_SCRIPT;
 
 		// When
 		try {
-			migrationService.run('myPackage', migration);
+			migrationService.runMigration('myPackage', migration);
 			System.assert(false, 'Expected IllegalArgumentException');
 		} catch (IllegalArgumentException e) {
 		}
@@ -379,13 +358,13 @@ private class MigrationServiceTest {
 		insertMigrations();
 
 		// When
-		ExecutedMigration executedMigration = migrationService.getMigration('myPackage2', 5);
+		Migration executedMigration = migrationService.getMigration('myPackage2', 5);
 
 		// Then
 		System.assertEquals('Test migration 5', executedMigration.description);
 		System.assertEquals(Datetime.newInstanceGmt(2020, 5, 2, 14, 32, 17), executedMigration.installedOn);
 		System.assertEquals('V005__Test_migration_5.apex', executedMigration.script);
-		System.assertEquals(Migration.Type.APEX, executedMigration.type);
+		System.assertEquals(MigrationDefinition.Type.APEX, executedMigration.type);
 		System.assertEquals(5, executedMigration.version);
 		System.assertEquals(100, executedMigration.checksum);
 	}

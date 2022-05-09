@@ -2,7 +2,8 @@ public interface ApexRunner {
 
 	/**
 	 * Executes anonymous Apex.
+	 * @return the Apex script's debug output
 	 * @throws ApexRunnerException
 	**/
-	void executeAnonymous(String script);
+	String executeAnonymous(String script);
 }
